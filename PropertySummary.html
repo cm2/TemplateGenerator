@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Property Summary Generator</title>
+        <style>
+            #content{
+                display:none;
+            }
+            input[type=submit]{
+                font-size: 110%;
+                width:100%;
+            }
+            body {
+                font-family: helvetica, sans-serif;
+                font-size: 110%;
+                color: #555;
+            }
+            td{ vertical-align: top;}
+            ol { list-style: none; }
+            li { background: #eee; margin:5px 0;}
+            label { 
+                width: 10em;
+                display: inline-block;
+                vertical-align: baseline;
+                text-align: left;
+            }
+            input[type=text], input[type=number] { 
+                border: solid 2px #ccc;
+                font-size: 110%;
+            }
+            textarea{
+                font-family: Monaco;
+                font-size: 80%;
+            }
+            fieldset { 
+                border: none;
+                border-top: solid 2px #eee;
+            }
+            form {
+                width:30em;
+                margin: 10px auto;
+            }
+            #output_html{
+                background: #eee;
+                margin: 1em 0;
+                padding: .5em;
+            }
+        </style>
+        <script>
+            function process(){
+                var inputs, output, i, re, output, d, linputs, output_html,ip;
+                d = document;
+                output = d.getElementById('output');
+                output_html = d.getElementById('output_html');
+                content = d.getElementById('content').innerHTML;
+                inputs = d.getElementsByTagName('input');
+                linputs = inputs.length; for(i=0; i< linputs; i++){
+                    re = new RegExp('\\{'+inputs[i].id+'\\}','g');
+                    ip = (inputs[i].id == 'schools') ? inputs[i].value.replace(/,/g,'<br\/>') : inputs[i].value;
+                    content = (ip != '')? content.replace(re,ip) : content;
+                }
+                output.value = content;
+                output_html.innerHTML = content;
+            }
+        </script>
+    </head>
+    <body>
+        <h2>Property Summary Generator</h2>
+        <table>
+            <tr>
+                <td>
+                    <form action="javascript:process()">
+                        <fieldset>
+                            <legend>Property Location</legend>
+                            <ol>
+                                <li>
+                                    <label for="street">Street: </label>
+                                    <input type="text" id="street" />
+                                </li>
+                                <li>
+                                    <label for="area">Area: </label>
+                                    <input type="text" id="area" />
+                                </li>
+                                <li>
+                                    <label for="city">City: </label>
+                                    <input type="text" id="city" />
+                                </li>
+                                <li>
+                                    <label for="zip">zip: </label>
+                                    <input type="text" id="zip" />
+                                </li>
+                                <li>
+                                    <label for="subdivision">Subdivision: </label>
+                                    <input type="text" id="subdivision" />
+                                </li>
+                                <li>
+                                    <label for="homeowners_contact">Homeowner Contact: </label>
+                                    <input  type="text" id="homeowners_contact" />
+                                </li>
+                            </ol>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Property Details</legend>
+                            <ol>
+                                <li>
+                                    <label for="image">Image: </label>
+                                    <input  type="text" id="image" />
+                                </li>
+                                <li>
+                                    <label for="propertytype">Property Type: </label>
+                                    <input  type="text" id="propertytype" />
+                                </li>
+                                <li>
+                                    <label for="beds">Beds: </label>
+                                    <input value="2" type="number" id="beds" />
+                                </li>
+                                <li>
+                                    <label for="baths">Baths: </label>
+                                    <input value="2" type="number" id="baths" />
+                                </li>
+                            </ol>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Point of Interest</legend>
+                            <ol>
+                                <li>
+                                    <label for="poi">Point of interest: </label>
+                                    <input type="text" id="poi" />
+                                </li>
+                                <li>
+                                    <label for="schooldistrict">School District</label>
+                                    <input type="text" id="schooldistrict" />
+                                </li>
+                                <li>
+                                    <label for="schools">Schools</label>
+                                    <input type="text" id="schools" />
+                                </li>
+                            </ol>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Links</legend>
+                            <ol>
+                                <li>
+                                    <label for="link_homeowners">Homeowner</label>
+                                    <input type="text" id="link_homeowners" />
+                                </li>
+                                <li>
+                                    <label for="link_schooldistrict">School District</label>
+                                    <input type="text" id="link_homeowners" />
+                                </li>
+                                <li>
+                                    <label for="link_area">Area</label>
+                                    <input type="text" id="link_area" />
+                                </li>
+                                <li>
+                                    <label for="link_contact_buyer">Contact Buyer</label>
+                                    <input type="text"  id="link_contact_buyer" />
+                                </li>
+                                <li>
+                                    <label for="link_contact_seller">Contact Seller</label>
+                                    <input type="text"  id="link_contact_seller" />
+                                </li>
+                            </ol>
+                        </fieldset>
+                        <input type="submit" value="Process" />
+                    </form>
+                </td>
+                <td>
+                    <fieldset>
+                       <legend> Output.</legend>
+                       <div id="output_html">
+                       </div>
+
+                       <textarea id="output" cols="55" rows="25" readonly="readonly">
+                       </textarea>
+                    </fieldset>
+                </td>
+            </tr>
+        </table>
+        <div id="content">
+<h2>
+{propertytype} FOR SALE!
+{street}, {area} NM {zip} {subdivision}
+</h2>
+
+<p>
+<img src="{image}" alt="Photo of {street}" width="100" style="float:left; margin: 10px;"/>
+{street} {area}, NM {zip} {beds} beds, {baths} baths,
+Located in {subdivision} at {area}.
+<ul style="clear:both;">
+    <li>
+        <a href="{link_property}">
+        See more detailed information about {street}.
+        </a>
+    </li>
+    <li>
+        <a href="{link_area}">Find homes for sale</a> 
+        in the surrounding neighborhoods.
+    </li>
+    <li>
+        To learn more about {subdivision}
+        <a href="{link_homeowners}">{subdivision} homeowners association</a>
+        <br>{homeowners_contact}
+    </li>
+    <li>
+        {subdivision}, {city} is served by
+        <strong><a href="{link_schooldistrict}">{schooldistrict}</a></strong>.
+        <br>{schools}
+    </li>
+    <li>
+        Points of Interest: {poi}
+    </li>
+</ul>
+</p>
+<p>
+    <a href="{link_contact_seller}">
+    Looking to sell your {area} home or to downsize?
+    </a>
+</p>
+<p>
+    If you are ready to <strong>Buy a Home</strong> in {area}, {city},
+    <a href="{link_contact_buyer}">call or email</a>
+    Lloyd...<strong>Your Source for Where to Live in {city}</strong>!
+</p>
+        </div>
+    </body>
+
+</html>
