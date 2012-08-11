@@ -3,9 +3,36 @@
     <head>
         <title>Property Summary Generator</title>
         <style>
-            #content{
+            #fieldlist + input[type=submit],
+            #original_clone{ 
                 display:none;
             }
+            #output:focus + #output_html{
+                display:none;
+            }
+            label[for=output]{
+                font-size: 80%;
+                color: #777;
+            }
+            #output{
+                height:0;
+                border:none;
+                width: 100%;
+            }
+            #output:focus {
+                height:400px;
+                border: solid 2px #ccc;
+            }
+            #content{
+                height: 100px;
+                width: 100%;
+                display:block;
+                border: solid 2px #ccc;
+            }
+            #fieldlist.ready + input[type=submit]{
+                display:inline;
+            }
+            #fieldlist{ max-height: 500px; overflow: auto;}
             input[type=submit]{
                 font-size: 110%;
                 width:100%;
@@ -14,15 +41,17 @@
                 font-family: helvetica, sans-serif;
                 font-size: 110%;
                 color: #555;
+                border:none;
             }
-            td{ vertical-align: top;}
+            td{ vertical-align: top; overflow: scroll; height:100%;}
             ol { list-style: none; }
             li { background: #eee; margin:5px 0;}
-            label { 
+            li label { 
                 width: 10em;
                 display: inline-block;
                 vertical-align: baseline;
                 text-align: left;
+                white-space: nowrap;
             }
             input[type=text], input[type=number] { 
                 border: solid 2px #ccc;
@@ -42,17 +71,55 @@
             }
             #output_html{
                 background: #eee;
-                margin: 1em 0;
                 padding: .5em;
             }
         </style>
         <script>
+            function init(){
+                var tags, ltags, i,content, d;
+                d = document;
+                content = d.getElementById('content').value;
+                tags = content.match(/(\w|:)+(?=\})/g);
+                ltags= tags.length;
+                d.getElementById('fieldlist').innerHTML = '';
+                for(i=0; i<ltags; i++){
+                    (d.getElementById(tags[i]) == undefined) && createField(tags[i]);
+                }
+            }
+            function createField(id){
+                var d,category,fieldset,legend,list,li;
+                d = document;
+                category = id.match(/\w+(?=:)/);
+                category = category !== null ? category : 'general';
+                fieldset = d.getElementById(category);
+                list = d.getElementById(category+'_list');
+                if (!fieldset){
+                    fieldlist = d.getElementById('fieldlist');
+                    fieldlist.setAttribute('class','ready');
+                    fieldset = d.createElement('fieldset');
+                    legend = d.createElement('legend');
+                    list = d.createElement('ol');
+                    list.id = category+'_list';
+                    legend.innerHTML = category;
+                    fieldset.id = category;
+                    fieldset.appendChild(legend);
+                    fieldset.appendChild(list);
+                    fieldlist.appendChild(fieldset);
+                }
+                li = d.getElementsByClassName('clone')[0].cloneNode(true);
+                li.firstChild.setAttribute('for',id)
+                li.lastChild.id = id;
+                li.firstChild.innerHTML= id.replace(/\w+:/,'').replace(/_/g,' ');
+                li.id=""
+                list.appendChild(li);
+            }
+
             function process(){
                 var inputs, output, i, re, output, d, linputs, output_html,ip;
                 d = document;
                 output = d.getElementById('output');
                 output_html = d.getElementById('output_html');
-                content = d.getElementById('content').innerHTML;
+                content = d.getElementById('content').value;
                 inputs = d.getElementsByTagName('input');
                 linputs = inputs.length; for(i=0; i< linputs; i++){
                     re = new RegExp('\\{'+inputs[i].id+'\\}','g');
@@ -64,164 +131,35 @@
             }
         </script>
     </head>
-    <body>
-        <h2>Property Summary Generator</h2>
+    <body> 
+        <h2>Template Generator</h2>
         <table>
             <tr>
                 <td>
-                    <form action="javascript:process()">
+                    <form action="javascript:init()">
                         <fieldset>
-                            <legend>Property Location</legend>
-                            <ol>
-                                <li>
-                                    <label for="street">Street: </label>
-                                    <input type="text" id="street" />
-                                </li>
-                                <li>
-                                    <label for="area">Area: </label>
-                                    <input type="text" id="area" />
-                                </li>
-                                <li>
-                                    <label for="city">City: </label>
-                                    <input type="text" id="city" />
-                                </li>
-                                <li>
-                                    <label for="zip">zip: </label>
-                                    <input type="text" id="zip" />
-                                </li>
-                                <li>
-                                    <label for="subdivision">Subdivision: </label>
-                                    <input type="text" id="subdivision" />
-                                </li>
-                                <li>
-                                    <label for="homeowners_contact">Homeowner Contact: </label>
-                                    <input  type="text" id="homeowners_contact" />
-                                </li>
-                            </ol>
+                            <legend>Template</legend>
+                            <textarea id="content"></textarea>
+                            <input type="submit" value="Load"/>
                         </fieldset>
                         <fieldset>
-                            <legend>Property Details</legend>
-                            <ol>
-                                <li>
-                                    <label for="image">Image: </label>
-                                    <input  type="text" id="image" />
-                                </li>
-                                <li>
-                                    <label for="propertytype">Property Type: </label>
-                                    <input  type="text" id="propertytype" />
-                                </li>
-                                <li>
-                                    <label for="beds">Beds: </label>
-                                    <input value="2" type="number" id="beds" />
-                                </li>
-                                <li>
-                                    <label for="baths">Baths: </label>
-                                    <input value="2" type="number" id="baths" />
-                                </li>
-                            </ol>
+                           <legend> Output.</legend>
+                            <label for="output">copy raw output</label>
+                           <textarea id="output" cols="55" rows="25" readonly="readonly"></textarea>
+                           <div id="output_html"></div>
                         </fieldset>
-                        <fieldset>
-                            <legend>Point of Interest</legend>
-                            <ol>
-                                <li>
-                                    <label for="poi">Point of interest: </label>
-                                    <input type="text" id="poi" />
-                                </li>
-                                <li>
-                                    <label for="schooldistrict">School District</label>
-                                    <input type="text" id="schooldistrict" />
-                                </li>
-                                <li>
-                                    <label for="schools">Schools</label>
-                                    <input type="text" id="schools" />
-                                </li>
-                            </ol>
-                        </fieldset>
-                        <fieldset>
-                            <legend>Links</legend>
-                            <ol>
-                                <li>
-                                    <label for="link_homeowners">Homeowner</label>
-                                    <input type="text" id="link_homeowners" />
-                                </li>
-                                <li>
-                                    <label for="link_schooldistrict">School District</label>
-                                    <input type="text" id="link_homeowners" />
-                                </li>
-                                <li>
-                                    <label for="link_area">Area</label>
-                                    <input type="text" id="link_area" />
-                                </li>
-                                <li>
-                                    <label for="link_contact_buyer">Contact Buyer</label>
-                                    <input type="text"  id="link_contact_buyer" />
-                                </li>
-                                <li>
-                                    <label for="link_contact_seller">Contact Seller</label>
-                                    <input type="text"  id="link_contact_seller" />
-                                </li>
-                            </ol>
-                        </fieldset>
-                        <input type="submit" value="Process" />
                     </form>
                 </td>
                 <td>
-                    <fieldset>
-                       <legend> Output.</legend>
-                       <div id="output_html">
-                       </div>
-                        <p>Copy this:<p>
-                       <textarea id="output" cols="55" rows="25" readonly="readonly">
-                       </textarea>
-                    </fieldset>
+                    <form action="javascript:process()">
+                        <div id="fieldlist" >
+                        </div>
+                        <input type="submit" value="Process" />
+                    </form>
                 </td>
             </tr>
         </table>
-        <div id="content">
-<h1>
-{propertytype} FOR SALE!
-{street}, {area} NM {zip} {subdivision}
-</h1>
-
-<p>
-<img src="{image}" alt="Photo of {street}" width="100" style="float:left; margin: 10px;"/>
-{street} {area}, NM {zip} {beds} beds, {baths} baths,
-Located in {subdivision} at {area}.
-<ul style="clear:both;">
-    <li>
-        <a href="{link_property}">
-        See more detailed information about {street}.
-        </a>
-    </li>
-    <li>
-        <a href="{link_area}">Find homes for sale</a> 
-        in the surrounding neighborhoods.
-    </li>
-    <li>
-        To learn more about {subdivision}
-        <a href="{link_homeowners}">{subdivision} homeowners association</a>
-        <br>{homeowners_contact}
-    </li>
-    <li>
-        {subdivision}, {city} is served by
-        <strong><a href="{link_schooldistrict}">{schooldistrict}</a></strong>.
-        <br>{schools}
-    </li>
-    <li>
-        Points of Interest: {poi}
-    </li>
-</ul>
-</p>
-<p>
-    <a href="{link_contact_seller}">
-    Looking to sell your {area} home or to downsize?
-    </a>
-</p>
-<p>
-    If you are ready to <strong>Buy a Home</strong> in {area}, {city},
-    <a href="{link_contact_buyer}">call or email</a>
-    Lloyd...<strong>Your Source for Where to Live in {city}</strong>!
-</p>
+        <li id="original_clone" class="clone"><label for=""></label><input type="text" id=""/></li>
         </div>
     </body>
 
