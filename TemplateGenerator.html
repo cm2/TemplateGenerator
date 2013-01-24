@@ -1,8 +1,20 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Property Summary Generator</title>
+        <title>Template Generator</title>
         <style>
+            #drop_zone {
+                border: dashed 2px #ccc;
+                background: #fafafa;
+                border-radius: 5px;
+                text-align: center;
+                padding: 1em;
+                color: #aaa;
+                font-size: 120%;
+            }
+            #drop_zone[data-state=active] {
+                background: #eefaee;
+            }
             #fieldlist + input[type=submit],
             #original_clone{ 
                 display:none;
@@ -32,7 +44,6 @@
             #fieldlist.ready + input[type=submit]{
                 display:inline;
             }
-            #fieldlist{ max-height: 500px; overflow: auto;}
             input[type=submit]{
                 font-size: 110%;
                 width:100%;
@@ -74,19 +85,106 @@
                 padding: .5em;
             }
         </style>
-        <script>
-            function init(){
+    </head>
+    <body>
+        <h2>Template Generator</h2>
+        <div id="drop_zone" data-placeholder="Drop template file here."></div>
+        <form id="inputs">
+            <div id="fieldlist" >
+            </div>
+            <input type="submit" value="Process" />
+        </form>
+        <textarea id="output"></textarea>
+        <div id="output_html"></div>
+        <div>
+        <li id="original_clone" class="clone"><label for=""></label><input type="text" id=""/></li>
+        </div>
+        <script type="text/javascript">
+        (function(){
+            /* dropzone */
+            function DropZone(target,callback){
+                this.drop = document.getElementById(target);
+                this.cb = callback;
+                this.placeholder = this.drop.getAttribute('data-placeholder');
+                this.setDropState(false);
+                this.drop.addEventListener('drop',this.scoped(this.loadFile), false);
+                this.drop.addEventListener('dragover',this.scoped(this.dragover), false);
+            }
+            var dz = DropZone.prototype;
+            dz.scoped = function(fn){
+                var that = this;
+                return function(){
+                    fn.apply(that, arguments)   
+                }
+            }
+            dz.dragover = function (evt){
+                evt.stopPropagation();
+                evt.preventDefault();
+                evt.dataTransfer.dropEffect = 'copy';
+
+            };
+            dz.setDropState = function(state, custom_text) {
+                
+                this.drop.innerHTML = (custom_text == undefined || custom_text == '')?
+                    this.placeholder : custom_text;
+                this.drop.setAttribute('data-state', (state == false)? '': state);
+            };
+            dz.loadFile = function (evt){
+                evt.stopPropagation();
+                evt.preventDefault();
+                this.file = evt.dataTransfer.files[0];
+                this.setDropState('active','Loaded file ' + this.file.name);
+                //callback is provided the file and the dropzone
+                this.cb && this.cb(this.file,this);
+            };
+            dz.getFile = function() {
+                return this.file;
+            };
+
+            function TemplateGenerator(){
+                var i = document.getElementById('inputs');
+                this.content='';
+                i.addEventListener('submit',this.scoped(this.process), false);
+            }
+            var tg = TemplateGenerator.prototype;
+            tg.scoped = function(fn){
+                var that = this;
+                return function(){
+                    fn.apply(that, arguments)   
+                }
+            }
+            tg.setContentsHandler = function(handler){
+                this.loadTemplate = this.scoped(handler);
+            }
+            tg.generateForm = function(){
                 var tags, ltags, i,content, d;
+                content = this.content;
                 d = document;
-                content = d.getElementById('content').value;
                 tags = content.match(/(\w|:)+(?=\})/g);
                 ltags= tags.length;
                 d.getElementById('fieldlist').innerHTML = '';
                 for(i=0; i<ltags; i++){
-                    (d.getElementById(tags[i]) == undefined) && createField(tags[i]);
+                    (d.getElementById(tags[i]) == undefined) && this.createField(tags[i]);
                 }
             }
-            function createField(id){
+            tg.process = function(evt){
+                var inputs, output, i, re, output, d, linputs, output_html,ip;
+                evt.stopPropagation();
+                evt.preventDefault();
+                d = document;
+                output = d.getElementById('output');
+                output_html = d.getElementById('output_html');
+                content = this.content;
+                inputs = d.getElementsByTagName('input');
+                linputs = inputs.length; for(i=0; i< linputs; i++){
+                    re = new RegExp('\\{'+inputs[i].id+'\\}','g');
+                    ip = inputs[i].value;
+                    content = (ip != '')? content.replace(re,ip) : content;
+                }
+                output.value = content;
+                output_html.innerHTML = content;
+            }
+            tg.createField = function(id){
                 var d,category,fieldset,legend,list,li;
                 d = document;
                 category = id.match(/\w+(?=:)/);
@@ -114,53 +212,27 @@
                 list.appendChild(li);
             }
 
-            function process(){
-                var inputs, output, i, re, output, d, linputs, output_html,ip;
-                d = document;
-                output = d.getElementById('output');
-                output_html = d.getElementById('output_html');
-                content = d.getElementById('content').value;
-                inputs = d.getElementsByTagName('input');
-                linputs = inputs.length; for(i=0; i< linputs; i++){
-                    re = new RegExp('\\{'+inputs[i].id+'\\}','g');
-                    ip = (inputs[i].id == 'schools') ? inputs[i].value.replace(/,/g,'<br\/>') : inputs[i].value;
-                    content = (ip != '')? content.replace(re,ip) : content;
+
+
+            //START THE APPLICATION
+            var tg = new TemplateGenerator();
+            tg.setContentsHandler(function(file,dropzone){
+                var reader,that = this;
+                if(file.type != 'text/plain'){
+                    dropzone.setDropState('error','Please load a text file.');
+                }else{
+                    //begin file read
+                    reader = new FileReader();
+                    reader.onload = function(evt){
+                        that.content = evt.target.result;
+                        that.generateForm();
+                    }
+                    reader.readAsText(file);
                 }
-                output.value = content;
-                output_html.innerHTML = content;
-            }
+            });
+            var dz = new DropZone('drop_zone',tg.loadTemplate);
+        }());
         </script>
-    </head>
-    <body> 
-        <h2>Template Generator</h2>
-        <table>
-            <tr>
-                <td>
-                    <form action="javascript:init()">
-                        <fieldset>
-                            <legend>Template</legend>
-                            <textarea id="content"></textarea>
-                            <input type="submit" value="Load"/>
-                        </fieldset>
-                        <fieldset>
-                           <legend> Output.</legend>
-                            <label for="output">copy raw output</label>
-                           <textarea id="output" cols="55" rows="25" readonly="readonly"></textarea>
-                           <div id="output_html"></div>
-                        </fieldset>
-                    </form>
-                </td>
-                <td>
-                    <form action="javascript:process()">
-                        <div id="fieldlist" >
-                        </div>
-                        <input type="submit" value="Process" />
-                    </form>
-                </td>
-            </tr>
-        </table>
-        <li id="original_clone" class="clone"><label for=""></label><input type="text" id=""/></li>
-        </div>
     </body>
 
 </html>
