@@ -2,237 +2,43 @@
 <html>
     <head>
         <title>Template Generator</title>
-        <style>
-            #drop_zone {
-                border: dashed 2px #ccc;
-                background: #fafafa;
-                border-radius: 5px;
-                text-align: center;
-                padding: 1em;
-                color: #aaa;
-                font-size: 120%;
-            }
-            #drop_zone[data-state=active] {
-                background: #eefaee;
-            }
-            #fieldlist + input[type=submit],
-            #original_clone{ 
-                display:none;
-            }
-            #output:focus + #output_html{
-                display:none;
-            }
-            label[for=output]{
-                font-size: 80%;
-                color: #777;
-            }
-            #output{
-                height:0;
-                border:none;
-                width: 100%;
-            }
-            #output:focus {
-                height:400px;
-                border: solid 2px #ccc;
-            }
-            #content{
-                height: 100px;
-                width: 100%;
-                display:block;
-                border: solid 2px #ccc;
-            }
-            #fieldlist.ready + input[type=submit]{
-                display:inline;
-            }
-            input[type=submit]{
-                font-size: 110%;
-                width:100%;
-            }
-            body {
-                font-family: helvetica, sans-serif;
-                font-size: 110%;
-                color: #555;
-                border:none;
-            }
-            td{ vertical-align: top; overflow: scroll; height:100%;}
-            ol { list-style: none; }
-            li { background: #eee; margin:5px 0;}
-            li label { 
-                width: 10em;
-                display: inline-block;
-                vertical-align: baseline;
-                text-align: left;
-                white-space: nowrap;
-            }
-            input[type=text], input[type=number] { 
-                border: solid 2px #ccc;
-                font-size: 110%;
-            }
-            textarea{
-                font-family: Monaco;
-                font-size: 80%;
-            }
-            fieldset { 
-                border: none;
-                border-top: solid 2px #eee;
-            }
-            form {
-                width:30em;
-                margin: 10px auto;
-            }
-            #output_html{
-                background: #eee;
-                padding: .5em;
-            }
-        </style>
+        <link
+            rel="stylesheet"
+            type="text/css"
+            href="style/main.css"
+        />
+        <script data-main="script/main" src="script/require.js"></script>
     </head>
     <body>
-        <h2>Template Generator</h2>
-        <div id="drop_zone" data-placeholder="Drop template file here."></div>
-        <form id="inputs">
-            <div id="fieldlist" >
-            </div>
-            <input type="submit" value="Process" />
-        </form>
-        <textarea id="output"></textarea>
-        <div id="output_html"></div>
-        <div>
-        <li id="original_clone" class="clone"><label for=""></label><input type="text" id=""/></li>
+        <div id="header">
+            <h1>Template Generator</h1>
         </div>
-        <script type="text/javascript">
-        (function(){
-            /* dropzone */
-            function DropZone(target,callback){
-                this.drop = document.getElementById(target);
-                this.cb = callback;
-                this.placeholder = this.drop.getAttribute('data-placeholder');
-                this.setDropState(false);
-                this.drop.addEventListener('drop',this.scoped(this.loadFile), false);
-                this.drop.addEventListener('dragover',this.scoped(this.dragover), false);
-            }
-            var dz = DropZone.prototype;
-            dz.scoped = function(fn){
-                var that = this;
-                return function(){
-                    fn.apply(that, arguments)   
-                }
-            }
-            dz.dragover = function (evt){
-                evt.stopPropagation();
-                evt.preventDefault();
-                evt.dataTransfer.dropEffect = 'copy';
-
-            };
-            dz.setDropState = function(state, custom_text) {
-                
-                this.drop.innerHTML = (custom_text == undefined || custom_text == '')?
-                    this.placeholder : custom_text;
-                this.drop.setAttribute('data-state', (state == false)? '': state);
-            };
-            dz.loadFile = function (evt){
-                evt.stopPropagation();
-                evt.preventDefault();
-                this.file = evt.dataTransfer.files[0];
-                this.setDropState('active','Loaded file ' + this.file.name);
-                //callback is provided the file and the dropzone
-                this.cb && this.cb(this.file,this);
-            };
-            dz.getFile = function() {
-                return this.file;
-            };
-
-            function TemplateGenerator(){
-                var i = document.getElementById('inputs');
-                this.content='';
-                i.addEventListener('submit',this.scoped(this.process), false);
-            }
-            var tg = TemplateGenerator.prototype;
-            tg.scoped = function(fn){
-                var that = this;
-                return function(){
-                    fn.apply(that, arguments)   
-                }
-            }
-            tg.setContentsHandler = function(handler){
-                this.loadTemplate = this.scoped(handler);
-            }
-            tg.generateForm = function(){
-                var tags, ltags, i,content, d;
-                content = this.content;
-                d = document;
-                tags = content.match(/(\w|:)+(?=\})/g);
-                ltags= tags.length;
-                d.getElementById('fieldlist').innerHTML = '';
-                for(i=0; i<ltags; i++){
-                    (d.getElementById(tags[i]) == undefined) && this.createField(tags[i]);
-                }
-            }
-            tg.process = function(evt){
-                var inputs, output, i, re, output, d, linputs, output_html,ip;
-                evt.stopPropagation();
-                evt.preventDefault();
-                d = document;
-                output = d.getElementById('output');
-                output_html = d.getElementById('output_html');
-                content = this.content;
-                inputs = d.getElementsByTagName('input');
-                linputs = inputs.length; for(i=0; i< linputs; i++){
-                    re = new RegExp('\\{'+inputs[i].id+'\\}','g');
-                    ip = inputs[i].value;
-                    content = (ip != '')? content.replace(re,ip) : content;
-                }
-                output.value = content;
-                output_html.innerHTML = content;
-            }
-            tg.createField = function(id){
-                var d,category,fieldset,legend,list,li;
-                d = document;
-                category = id.match(/\w+(?=:)/);
-                category = category !== null ? category : 'general';
-                fieldset = d.getElementById(category);
-                list = d.getElementById(category+'_list');
-                if (!fieldset){
-                    fieldlist = d.getElementById('fieldlist');
-                    fieldlist.setAttribute('class','ready');
-                    fieldset = d.createElement('fieldset');
-                    legend = d.createElement('legend');
-                    list = d.createElement('ol');
-                    list.id = category+'_list';
-                    legend.innerHTML = category;
-                    fieldset.id = category;
-                    fieldset.appendChild(legend);
-                    fieldset.appendChild(list);
-                    fieldlist.appendChild(fieldset);
-                }
-                li = d.getElementsByClassName('clone')[0].cloneNode(true);
-                li.firstChild.setAttribute('for',id)
-                li.lastChild.id = id;
-                li.firstChild.innerHTML= id.replace(/\w+:/,'').replace(/_/g,' ');
-                li.id=""
-                list.appendChild(li);
-            }
-
-
-
-            //START THE APPLICATION
-            var tg = new TemplateGenerator();
-            tg.setContentsHandler(function(file,dropzone){
-                var reader,that = this;
-                if(file.type != 'text/plain'){
-                    dropzone.setDropState('error','Please load a text file.');
-                }else{
-                    //begin file read
-                    reader = new FileReader();
-                    reader.onload = function(evt){
-                        that.content = evt.target.result;
-                        that.generateForm();
-                    }
-                    reader.readAsText(file);
-                }
-            });
-            var dz = new DropZone('drop_zone',tg.loadTemplate);
-        }());
-        </script>
+        <div id="body">
+            <nav>
+                <ul id="controls">
+                    <li>
+                        Loaded Templates
+                        <select id="stored_templates">
+                            <option disabled selected>Select or drag a Template</option>
+                        </select>
+                    </li>
+                </ul>
+            </nav>
+            <div id="content">
+                <form id="inputs">
+                    <div id="fieldlist" >
+                    </div>
+                    <input type="submit" value="Process" />
+                    <input type="reset" value="Clear" />
+                </form>
+                <div id="outputs">
+                    <textarea id="output"></textarea>
+                    <div id="output_html"></div>
+                </div>
+                <div>
+                <li id="original_clone" class="clone"><label for=""></label><textarea type="text" id=""></textarea></li>
+                </div>
+            </div>
+        </div>
     </body>
-
 </html>

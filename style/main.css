@@ -1,0 +1,142 @@
+html, body {
+    height: 100%;
+    min-height: 100%;
+}
+body {
+    font-family: Helvetica, Arial, sans-serif;
+}
+body[data-state = dragable] > #header {
+    background:  #d1f2a5;
+    color: #555;
+}
+body[data-state = dragable] > #header > h1:after {
+    content: '        Load a file!';
+    font-size: 80%;
+}
+body[data-state = error] > #header > h1:after {
+    content: '        File load Failed';
+    font-size: 80%;
+}
+ul, #header, body {
+    margin: 0;
+    padding: 0;
+}
+#header {
+    background: #6D7578;
+    color: #fff;
+}
+#header > h1 {
+    font-size: 100%;
+    font-weight: 300;
+    margin: 0;
+    padding:.5em;
+}
+nav {
+    background: #eee;
+    padding: 10px;
+    border-bottom: solid 1px #ccc;
+    font-size: 90%;
+}
+#body {
+    vertical-align: top;
+    width:100%;
+}
+#content {
+    height: 100%;
+    overflow: auto;
+}
+#drop_zone {
+    border: dashed 1px #aaa;
+    color: #aaa;
+    /*text-shadow: 1px -1px 1px #111;*/
+    font-size: 80%;
+    text-align: center;
+    border-radius: 15px;
+    height:50px;
+    padding: 10px;
+    background: #ddd;
+    margin: auto;
+    line-height:50px;
+}
+#drop_zone>div {
+    display: inline-block;
+    vertical-align: middle;
+}
+#output_html{
+    font-size: 90%;
+}
+input[type=button], input[type=submit],input[type=reset] {
+    border-radius: 5px;
+    min-width: 100px;
+    box-shadow: 1px 1px 5px #fff inset;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 90%;
+    line-height: 1.5;
+    font-weight: 100;
+    color: #555;
+    background: #ddd;
+    border: solid 1px #888;
+}
+input[type=button]:active, input[type=submit]:active, input[type=reset]:active {
+    box-shadow: 1px 1px 5px #888 inset;
+}
+ul {
+    list-style: none;
+}
+li {
+    margin: .5em 0;
+}
+
+
+
+/*** form styles **/
+fieldset {
+    border: none;
+    background: #f5f5f5;
+    margin: 2em 0;
+}
+legend {
+    text-transform: uppercase;
+    font-weight: 300;
+    color: #333;
+}
+ol {
+    list-style: none;
+    font-size: 90%;
+    margin:0;
+    padding:0;
+}
+ol > li {
+    background: #eee;
+    padding: 10px;
+}
+label {
+    min-width: 10em;
+    display: inline-block;
+}
+#original_clone {
+    display: none;
+}
+textarea {
+    display: inline-block;
+    vertical-align: top;
+    border: solid 1px #aaa;
+    min-width: 30em;
+    min-height: 3em;
+    font-weight: 300;
+    font-size: 100%;
+}
+textarea:focus {
+    outline: solid 2px #FFC48C;
+    box-shadow: 0px 0px 8px #EFFAB4 inset;
+}
+#inputs {
+    margin: .5em 3em;
+}
+#output { display: none;}
+#output_html {
+    background: #fafafa;
+    border: solid 1px #ddd;
+    margin: .5em 3em;
+    padding:1.5em
+}
