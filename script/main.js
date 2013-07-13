@@ -11,9 +11,9 @@ require([
             //begin file read
             reader = new FileReader();
             reader.onload = function(evt){
-                var content = evt.target.result
+                var content = evt.target.result;
                 tg.addTemplateAndLoad(file.name,content);
-            }
+            };
             reader.readAsText(file);
         }
     });
