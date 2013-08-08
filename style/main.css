@@ -133,7 +133,7 @@ textarea:focus {
 #inputs {
     margin: .5em 3em;
 }
-#output { display: none;}
+#output_container {position:fixed; top:0; left:0; width:1px; height:1px;overflow:hidden;}
 #output_html {
     background: #fafafa;
     border: solid 1px #ddd;
